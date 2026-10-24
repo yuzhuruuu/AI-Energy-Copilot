@@ -1,0 +1,6 @@
+{
+  "name": "AI Energy Copilot",
+  "description": "Dashboard pemantauan dan optimasi efisiensi energi berbasis AI untuk pemilik usaha kecil dan UMKM.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
