@@ -29,6 +29,7 @@ export interface ApplianceUsageItem {
   estimasiBiayaRp: number;
   persentaseTotal: number;
   statusPenggunaan: 'Optimal' | 'Puncak Beban' | 'Perlu Perhatian';
+  sumberData: 'Sensor CT Clamp' | 'Estimasi AI';
 }
 
 export interface DailyActivityLog {

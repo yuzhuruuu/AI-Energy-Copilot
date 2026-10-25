@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
 import { ApplianceUsageItem } from '../types/energy';
-import { ArrowUpDown, HelpCircle } from 'lucide-react';
+import { ArrowUpDown, Activity, Sparkles } from 'lucide-react';
 
 interface ApplianceTableProps {
   appliances?: ApplianceUsageItem[];
 }
 
 const defaultAppliances: ApplianceUsageItem[] = [
-  {
-    id: 'app-1',
-    namaAlat: 'Setrika Uap',
-    kategori: 'Peralatan Finishing / Boiler',
-    dayaWatt: 1200,
-    durasi: '3.5 Jam / hari',
-    durasiJam: 3.5,
-    estimasiBiayaRp: 215000,
-    persentaseTotal: 33,
-    statusPenggunaan: 'Puncak Beban',
-  },
   {
     id: 'app-2',
     namaAlat: 'Mesin Cuci',
@@ -28,6 +17,19 @@ const defaultAppliances: ApplianceUsageItem[] = [
     estimasiBiayaRp: 185000,
     persentaseTotal: 28,
     statusPenggunaan: 'Optimal',
+    sumberData: 'Sensor CT Clamp', // Primary machine uses IoT sensor
+  },
+  {
+    id: 'app-1',
+    namaAlat: 'Setrika Uap',
+    kategori: 'Peralatan Finishing / Boiler',
+    dayaWatt: 1200,
+    durasi: '3.5 Jam / hari',
+    durasiJam: 3.5,
+    estimasiBiayaRp: 215000,
+    persentaseTotal: 33,
+    statusPenggunaan: 'Puncak Beban',
+    sumberData: 'Estimasi AI',
   },
   {
     id: 'app-3',
@@ -39,6 +41,7 @@ const defaultAppliances: ApplianceUsageItem[] = [
     estimasiBiayaRp: 155000,
     persentaseTotal: 24,
     statusPenggunaan: 'Optimal',
+    sumberData: 'Estimasi AI',
   },
   {
     id: 'app-4',
@@ -50,13 +53,14 @@ const defaultAppliances: ApplianceUsageItem[] = [
     estimasiBiayaRp: 95000,
     persentaseTotal: 15,
     statusPenggunaan: 'Optimal',
+    sumberData: 'Estimasi AI',
   },
 ];
 
 export const ApplianceTable: React.FC<ApplianceTableProps> = ({
   appliances = defaultAppliances,
 }) => {
-  const [sortField, setSortField] = useState<'namaAlat' | 'durasiJam' | 'estimasiBiayaRp'>('estimasiBiayaRp');
+  const [sortField, setSortField] = useState<'namaAlat' | 'durasiJam' | 'estimasiBiayaRp' | 'sumberData'>('estimasiBiayaRp');
   const [sortAsc, setSortAsc] = useState(false);
 
   const sortedAppliances = [...appliances].sort((a, b) => {
@@ -72,7 +76,7 @@ export const ApplianceTable: React.FC<ApplianceTableProps> = ({
 
   const totalBiaya = appliances.reduce((sum, item) => sum + item.estimasiBiayaRp, 0);
 
-  const handleSort = (field: 'namaAlat' | 'durasiJam' | 'estimasiBiayaRp') => {
+  const handleSort = (field: 'namaAlat' | 'durasiJam' | 'estimasiBiayaRp' | 'sumberData') => {
     if (sortField === field) {
       setSortAsc(!sortAsc);
     } else {
@@ -97,12 +101,12 @@ export const ApplianceTable: React.FC<ApplianceTableProps> = ({
             Estimasi Beban Per Alat
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Rincian perkiraan biaya listrik bulanan berdasarkan durasi dan spesifikasi daya alat operasional.
+            Rincian beban daya gabungan dari sensor IoT hardware dan estimasi algoritma AI.
           </p>
         </div>
-        <div className="text-xs text-slate-500 self-start sm:self-auto">
+        <div className="text-xs text-slate-500 self-start sm:self-auto flex items-center gap-2">
           <span>{appliances.length} Alat Terdata</span>
-          <span aria-hidden="true" className="mx-1">·</span>
+          <span aria-hidden="true">·</span>
           <span>Tarif Rp 1.444,70 / kWh</span>
         </div>
       </div>
@@ -118,6 +122,17 @@ export const ApplianceTable: React.FC<ApplianceTableProps> = ({
                   className="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors cursor-pointer"
                 >
                   <span>Nama Alat</span>
+                  <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                </button>
+              </th>
+              {/* Required New Column: Sumber Data */}
+              <th scope="col" className="py-3 px-4">
+                <button
+                  type="button"
+                  onClick={() => handleSort('sumberData')}
+                  className="inline-flex items-center gap-1.5 hover:text-slate-900 transition-colors cursor-pointer"
+                >
+                  <span>Sumber Data</span>
                   <ArrowUpDown className="w-3 h-3 text-slate-400" />
                 </button>
               </th>
@@ -159,12 +174,30 @@ export const ApplianceTable: React.FC<ApplianceTableProps> = ({
                   </div>
                 </td>
 
-                {/* Column 2: Durasi */}
+                {/* Column 2: Sumber Data (Sensor CT Clamp vs Estimasi AI) */}
+                <td className="py-3.5 px-4 whitespace-nowrap">
+                  {item.sumberData === 'Sensor CT Clamp' ? (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </span>
+                      <span>Sensor CT Clamp</span>
+                    </div>
+                  ) : (
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-blue-800 bg-blue-50 border border-blue-200">
+                      <Sparkles className="w-3 h-3 text-blue-600" />
+                      <span>Estimasi AI</span>
+                    </div>
+                  )}
+                </td>
+
+                {/* Column 3: Durasi */}
                 <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
                   <span>{item.durasi}</span>
                 </td>
 
-                {/* Column 3: Estimasi Biaya (Rp) */}
+                {/* Column 4: Estimasi Biaya (Rp) */}
                 <td className="py-3.5 px-4 text-right whitespace-nowrap">
                   <span className="font-bold text-slate-900 font-mono-tabular">
                     {formatRupiah(item.estimasiBiayaRp)}
@@ -178,8 +211,13 @@ export const ApplianceTable: React.FC<ApplianceTableProps> = ({
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-slate-200 bg-slate-50/90 font-semibold text-slate-900 text-sm">
-              <td className="py-3 px-4">
-                <span>Total Estimasi Beban Terhitung</span>
+              <td className="py-3 px-4" colSpan={2}>
+                <div className="flex items-center gap-2">
+                  <span>Total Estimasi Beban Terhitung</span>
+                  <span className="text-xs text-slate-400 font-normal">
+                    (1 Sensor IoT + 3 Model AI)
+                  </span>
+                </div>
               </td>
               <td className="py-3 px-4 text-xs text-slate-500 font-normal">
                 Termasuk PPN & PPJ

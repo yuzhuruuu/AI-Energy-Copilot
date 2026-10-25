@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { SummaryMetrics } from './components/SummaryMetrics';
+import { CommitmentFeeBanner } from './components/CommitmentFeeBanner';
 import { MultimodalInput } from './components/MultimodalInput';
 import { EnergyBarChart } from './components/EnergyBarChart';
 import { ApplianceTable } from './components/ApplianceTable';
@@ -13,7 +14,6 @@ import {
   FileSpreadsheet,
   Printer,
   X,
-  HelpCircle,
   Lightbulb,
 } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export default function App() {
   // Financial & usage state
   const [billEstimate, setBillEstimate] = useState<number>(650000);
   const [totalUsageKwh, setTotalUsageKwh] = useState<number>(450);
-  const [potentialSavings, setPotentialSavings] = useState<number>(50000);
+  const [provenSavings, setProvenSavings] = useState<number>(70000); // e.g. Rp 70.000 (Penghematan Terbukti)
   
   // Recommendation state: 'pending' | 'accepted' | 'dismissed'
   const [recStatus, setRecStatus] = useState<'pending' | 'accepted' | 'dismissed'>('pending');
@@ -39,10 +39,10 @@ export default function App() {
   // Recommendation actions
   const handleAcceptRecommendation = () => {
     setRecStatus('accepted');
-    // Deduct Rp 45.000 from current bill estimate
+    // Deduct Rp 45.000 from current bill estimate and add to proven savings
     setBillEstimate(605000);
-    setPotentialSavings(5000); // Remaining potential savings
-    setLastAnalysisNotice('Rekomendasi disetujui: Jadwal setrika uap digeser ke pagi hari.');
+    setProvenSavings(115000); // 70.000 + 45.000
+    setLastAnalysisNotice('Rekomendasi disetujui: Jadwal setrika uap digeser ke pagi hari. Penghematan terbukti meningkat!');
     setTimeout(() => setLastAnalysisNotice(null), 5000);
   };
 
@@ -55,7 +55,7 @@ export default function App() {
   const handleResetRecommendation = () => {
     setRecStatus('pending');
     setBillEstimate(650000);
-    setPotentialSavings(50000);
+    setProvenSavings(70000);
   };
 
   // Multimodal analysis trigger simulation
@@ -66,7 +66,7 @@ export default function App() {
     setTimeout(() => {
       setIsAnalyzing(false);
       setLastAnalysisNotice(
-        'Analisis selesai: Data harian berhasil diverifikasi dengan meteran kWh. Pola beban puncak terdeteksi di waktu Siang.'
+        'Analisis selesai: Data harian berhasil disinkronkan dengan Sensor CT Clamp & kWh meter. Pola beban puncak terdeteksi di waktu Siang.'
       );
       // Scroll smoothly to analysis section
       const analysisEl = document.getElementById('analisis-beban');
@@ -108,7 +108,7 @@ export default function App() {
                 Berkah Laundry & Dry Clean
               </h1>
               <p className="text-xs text-slate-500">
-                Tarif B-1 / 1.300 VA · ID Pelanggan: 5210-9821-4402
+                Tarif B-1 / 1.300 VA · Sensor IoT ESP32 Terhubung
               </p>
             </div>
           </div>
@@ -135,17 +135,22 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. Summary Metrics Section */}
+        {/* 1. Summary Metrics Section (Now with 4 cards: Tagihan, Penggunaan, Penghematan Terbukti, Daya Real-Time) */}
         <section id="ringkasan" aria-label="Ringkasan Metrik Energi">
           <SummaryMetrics
             billEstimate={billEstimate}
             totalUsageKwh={totalUsageKwh}
-            potentialSavings={potentialSavings}
+            provenSavings={provenSavings}
             isRecommendationApplied={recStatus === 'accepted'}
           />
         </section>
 
-        {/* 2. Multimodal Input Section */}
+        {/* 2. Business Model & WTP (Willingness to Pay) Banner */}
+        <section id="commitment-fee" aria-label="Uji Coba Skema Commitment Fee">
+          <CommitmentFeeBanner />
+        </section>
+
+        {/* 3. Multimodal Input Section */}
         <section id="input-data" aria-label="Input Data Harian">
           <MultimodalInput
             onProcessAnalysis={handleProcessAnalysis}
@@ -153,7 +158,7 @@ export default function App() {
           />
         </section>
 
-        {/* 3. AI Analysis & Recommendation Section */}
+        {/* 4. AI Analysis & Recommendation Section */}
         <section
           id="analisis-beban"
           aria-label="Analisis dan Rekomendasi AI"
@@ -166,7 +171,7 @@ export default function App() {
                 Hasil Analisis Beban & Rekomendasi AI
               </h2>
               <p className="text-xs text-slate-500">
-                Pemodelan konsumsi listrik berdasarkan jam operasional dan beban per peralatan usaha Anda.
+                Pemodelan beban daya gabungan dari Sensor CT Clamp dan model estimasi AI.
               </p>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
@@ -175,7 +180,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* AI Recommendation Alert Box (Prominently placed above or alongside analysis) */}
+          {/* AI Recommendation Alert Box */}
           <AiRecommendationBox
             status={recStatus}
             onAccept={handleAcceptRecommendation}
@@ -183,14 +188,14 @@ export default function App() {
             onReset={handleResetRecommendation}
           />
 
-          {/* Grid Layout: Visual Bar Chart & Appliance Table */}
+          {/* Grid Layout: Visual Bar Chart & Appliance Table with "Sumber Data" */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Visual representation: Energy usage across 4 time periods (Pagi, Siang, Sore, Malam with Siang highest) */}
             <div className="lg:col-span-6 xl:col-span-5 w-full">
               <EnergyBarChart />
             </div>
 
-            {/* Data table: Estimasi Beban Per Alat */}
+            {/* Data table: Estimasi Beban Per Alat with Sumber Data column */}
             <div className="lg:col-span-6 xl:col-span-7 w-full">
               <ApplianceTable />
             </div>
@@ -205,10 +210,10 @@ export default function App() {
             </div>
             <div>
               <p className="font-semibold text-slate-800">
-                Tips Efisiensi Energi untuk Bisnis Laundry & Toko
+                Sinergi IoT Sensor & Optimasi Jadwal Kerja
               </p>
               <p className="text-slate-500 mt-0.5">
-                Hindari menyalakan setrika uap, mesin pengering, dan pendingin ruangan secara bersamaan saat jam 11:00 - 14:00 untuk menghindari pembatasan daya tripping MCB.
+                Sensor CT Clamp memantau lonjakan mesin cuci secara akurat, sementara model AI menyusun jadwal pergeseran alat berdaya tinggi untuk mengamankan garansi penghematan.
               </p>
             </div>
           </div>
@@ -227,12 +232,12 @@ export default function App() {
           <div className="flex items-center gap-2">
             <span className="font-semibold text-slate-700">AI Energy Copilot</span>
             <span aria-hidden="true">·</span>
-            <span>Platform Optimasi Energi untuk UMKM Indonesia</span>
+            <span>Platform IoT & AI Optimasi Energi untuk UMKM Indonesia</span>
           </div>
           <div className="flex items-center gap-4 text-slate-400">
-            <span>Standar Tarif Listrik PLN 2026</span>
+            <span>Sensor CT Clamp Aktif</span>
             <span aria-hidden="true">·</span>
-            <span>Data Terenkripsi</span>
+            <span>Skema Garansi 100% Terproteksi</span>
           </div>
         </div>
       </footer>
@@ -278,9 +283,15 @@ export default function App() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Potensi Hemat Tersedia:</span>
+                  <span className="text-slate-500">Penghematan Terbukti:</span>
                   <span className="font-bold text-emerald-700 font-mono-tabular">
-                    Rp {potentialSavings.toLocaleString('id-ID')} / bulan
+                    Rp {provenSavings.toLocaleString('id-ID')} / bulan (Lebih dari Fee!)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Komitmen Layanan AI:</span>
+                  <span className="font-bold text-indigo-700 font-mono-tabular">
+                    Rp 20.000 / bulan (Garansi Terpenuhi)
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -292,7 +303,7 @@ export default function App() {
               </div>
 
               <p className="text-slate-500 leading-relaxed">
-                Laporan ini merangkum pembagian beban 4 waktu (Pagi, Siang, Sore, Malam) dan pemakaian 4 alat utama operasional toko Anda.
+                Laporan ini merangkum pembagian beban 4 waktu, telemetri real-time sensor CT Clamp ESP32, dan validasi garansi skema komitmen fee.
               </p>
             </div>
 
